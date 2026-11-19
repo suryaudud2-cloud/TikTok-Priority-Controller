@@ -167,16 +167,23 @@ private fun readRam(context: Context): String = try {
     String.format("%.1f GB", info.availMem / (1024.0 * 1024.0 * 1024.0))
 } catch (_: Exception) { "Tidak tersedia" }
 
-private fun readNetwork(context: Context): String = try {
-    val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val net = cm.activeNetwork ?: return "Offline"
-    val caps = cm.getNetworkCapabilities(net) ?: return "Tidak diketahui"
-    when {
-        caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "Wi-Fi aktif"
-        caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Seluler"
-        else -> "Terhubung"
-    }
-} catch (_: Exception) { "Tidak tersedia" }
+private fun readNetwork(context: Context): String {
+    return try {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val net = cm.activeNetwork
+        if (net == null) {
+            "Offline"
+        } else {
+            val caps = cm.getNetworkCapabilities(net)
+            when {
+                caps == null -> "Tidak diketahui"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "Wi-Fi aktif"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Seluler"
+                else -> "Terhubung"
+            }
+        }
+    } catch (_: Exception) { "Tidak tersedia" }
+}
 
 private fun openTikTokDetails(context: Context) {
     safeStart(context, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
